@@ -23,11 +23,11 @@ const (
 )
 
 type CircuitBreaker struct {
-	mu                sync.Mutex
-	state             circuitState
-	failures          int
-	openUntil         time.Time
-	halfOpenInFlight  bool
+	mu               sync.Mutex
+	state            circuitState
+	failures         int
+	openUntil        time.Time
+	halfOpenInFlight bool
 }
 
 func NewCircuitBreaker() *CircuitBreaker {
@@ -47,7 +47,7 @@ func (cb *CircuitBreaker) allowRequest() error {
 		if now.After(cb.openUntil) {
 			cb.state = stateHalfOpen
 			cb.halfOpenInFlight = false
-			log.Printf("circuit: Open -> Half-Open")
+			log.Printf("circuit: Open to Half-Open")
 		} else {
 			return fmt.Errorf("circuit open until %s", cb.openUntil.Format(time.RFC3339))
 		}
@@ -75,7 +75,7 @@ func (cb *CircuitBreaker) onSuccess() {
 		cb.state = stateClosed
 		cb.failures = 0
 		cb.halfOpenInFlight = false
-		log.Printf("circuit: Half-Open -> Closed")
+		log.Printf("circuit: Half-Open to Closed")
 	case stateClosed:
 		cb.failures = 0
 	}
@@ -91,14 +91,14 @@ func (cb *CircuitBreaker) onFailure() {
 		cb.openUntil = time.Now().Add(openTimeout)
 		cb.failures = 0
 		cb.halfOpenInFlight = false
-		log.Printf("circuit: Half-Open -> Open")
+		log.Printf("circuit: Half-Open to Open")
 	case stateClosed:
 		cb.failures++
 		if cb.failures >= failureThreshold {
 			cb.state = stateOpen
 			cb.openUntil = time.Now().Add(openTimeout)
 			cb.failures = 0
-			log.Printf("circuit: Closed -> Open")
+			log.Printf("circuit: Closed to Open")
 		}
 	}
 }
