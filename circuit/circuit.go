@@ -9,6 +9,13 @@ import (
 	"time"
 )
 
+var retryable = map[int]bool{
+	http.StatusInternalServerError: true,
+	http.StatusBadGateway:          true,
+	http.StatusServiceUnavailable:  true,
+	http.StatusGatewayTimeout:      true,
+}
+
 type circuitState int
 
 const (
